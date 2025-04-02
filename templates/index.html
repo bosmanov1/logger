@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔗 Генератор ссылок</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <h1>🍉 Создать отслеживаемую ссылку</h1>
+
+        <div class="warning">
+            <p>⚠️ Внимание: Сервис собирает данные о местоположении. Используйте только с согласия пользователей.</p>
+        </div>
+
+        <form action="/create" method="POST">
+            <div class="form-group">
+                <label>Целевой URL:</label>
+                <input type="url" 
+                     name="target_url" 
+                     placeholder="https://example.com/" 
+                     pattern="https?://.+" 
+                     required>
+            </div>
+
+            <button type="submit" class="generate-btn">
+                🚀 Сгенерировать ссылку
+            </button>
+        </form>
+    </div>
+</body>
+</html>
