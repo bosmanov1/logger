@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Статистика {{ link_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <h1>🍉 Статистика: {{ link_id }}</h1>
+        
+        <div class="section">
+            <h2>🔗 Отслеживаемая ссылка</h2>
+            <div class="tracking-box">
+                <input type="text" id="trackingUrl" value="{{ tracking_url }}" readonly>
+                <button onclick="copyToClipboard()">📋 Копировать</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🗺️ Карта переходов</h2>
+            <div id="map"></div>
+        </div>
+
+        <div class="section">
+            <h2>📋 История посещений</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Время</th>
+                            <th>Устройство</th>
+                            <th>Браузер</th>
+                            <th>Координаты</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td class="user-id">{{ log[2] }}</td>
+                            <td>{{ log[10] }}</td>
+                            <td>{{ log[5] }}</td>
+                            <td>{{ log[6] }}</td>
+                            <td>
+                                {% if log[8] is not none and log[9] is not none %}
+                                    {{ "%.4f, %.4f"|format(log[8]|float, log[9]|float) }}
+                                {% else %}
+                                    ❌ Нет данных
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=16b0bf26-9eed-4f76-badc-52a9f942f9e5&lang=ru_RU"></script>
+    <script>
+    function copyToClipboard() {
+        const copyText = document.getElementById("trackingUrl");
+        copyText.select();
+        document.execCommand("copy");
+        alert("Ссылка скопирована: " + copyText.value);
+    }
+
+    ymaps.ready(() => {
+        const map = new ymaps.Map('map', {
+            center: [55.75, 37.61],
+            zoom: 3,
+            controls: ['zoomControl']
+        });
+
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffa500', '#800080'];
+        
+        {% for log in logs %}
+            {% if log[8] is not none and log[9] is not none %}
+                const placemark_{{ loop.index }} = new ymaps.Placemark(
+                    [{{ log[8]|float }}, {{ log[9]|float }}],
+                    {
+                        balloonContent: `
+                            <div class="balloon">
+                                <h3>{{ log[2] }}</h3>
+                                <p>🕒 {{ log[10] }}</p>
+                                <p>🌐 {{ log[5] }} / {{ log[6] }}</p>
+                            </div>
+                        `
+                    },
+                    {
+                        preset: 'islands#circleDotIcon',
+                        iconColor: colors[{{ loop.index % 5 }}]
+                    }
+                );
+                map.geoObjects.add(placemark_{{ loop.index }});
+            {% endif %}
+        {% endfor %}
+
+        if (map.geoObjects.getLength() > 0) {
+            map.setBounds(map.geoObjects.getBounds());
+        }
+    });
+    </script>
+</body>
+</html>
