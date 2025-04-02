@@ -1,0 +1,2 @@
+flask>=2.0.1
+ip2geotools>=0.1.6
